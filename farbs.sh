@@ -13,7 +13,7 @@ while getopts ":a:r:b:p:h" o; do case "${o}" in
 esac done
 
 [ -z "$dotfilesrepo" ] && dotfilesrepo="https://github.com/fedfontana/dotto.git"
-[ -z "$progsfile" ] && progsfile="https://raw.githubusercontent.com/fedfontana/fonta-boostrap/master/progs.csv"
+[ -z "$progsfile" ] && progsfile="https://raw.githubusercontent.com/fedfontana/fonta-bootstrap/master/progs.csv"
 [ -z "$aurhelper" ] && aurhelper="yay"
 [ -z "$repobranch" ] && repobranch="master"
 
@@ -39,13 +39,21 @@ refreshkeys()
 	pacman --noconfirm -S archlinux-keyring >/dev/null 2>&1
 }
 
+old_manualinstall() #something in the last line doesnt work???
+{ # Installs $1 manually. Used only for AUR helper here.
+	dialog --infobox "Installing \"$1\", an AUR helper..." 4 50
+	mkdir -p "/tmp/$1"
+	git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" >/dev/null 2>&1
+	sudo -u "$SUDO_USER" -D "/tmp/$1" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+}
+
 manualinstall() 
 { # Installs $1 manually. Used only for AUR helper here.
 	dialog --infobox "Installing \"$1\", an AUR helper..." 4 50
-	mkdir -p "$/tmp/$1"
-	git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" >/dev/null 2>&1 ||
-	# cd "/tmp/$1"
-	sudo -u "$SUDO_USER" -D "/tmp/$1" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" >/dev/null 2>&1 ||
+	cd "/tmp/$1"
+	sudo -u "$SUDO_USER" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+	cd
 }
 
 maininstall() 
@@ -69,7 +77,7 @@ gitmakeinstall()
 aurinstall() 
 {
 	dialog --title "FARBS Installation" --infobox "Installing \`$1\` ($n of $total) from the AUR. $1 $2" 5 70
-	echo "$aurinstalled" | grep -q "^$1$" && return 1
+	echo "$aurinstalled" | grep -q "^$1$" && return 1 #! isnt this the same as --needed???
 	sudo -u "$SUDO_USER" $aurhelper -S --noconfirm "$1" >/dev/null 2>&1
 }
 

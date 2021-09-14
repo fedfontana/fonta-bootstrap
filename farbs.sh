@@ -3,9 +3,10 @@
 
 ### OPTIONS AND VARIABLES ###
 
-while getopts ":a:r:b:p:h" o; do case "${o}" in
-	h) printf "Optional arguments for custom use:\\n  -r: Dotfiles repository (local file or url)\\n  -p: Dependencies and programs csv (local file or url)\\n  -a: AUR helper (must have pacman-like syntax)\\n  -h: Show this message\\n" && exit 1 ;;
+while getopts ":a:r:c:b:p:h" o; do case "${o}" in
+	h) printf "Optional arguments for custom use:\\n  -r: Dotfiles repository (local file or url)\\n  -c Config repository (local file or url)\\n  -p: Dependencies and programs csv (local file or url)\\n  -a: AUR helper (must have pacman-like syntax)\\n  -h: Show this message\\n" && exit 1 ;;
 	r) dotfilesrepo=${OPTARG} && git ls-remote "$dotfilesrepo" || exit 1 ;;
+	c) configrepo=${OPTARG} && git ls-remote "$configrepo" || exit 1;;
 	b) repobranch=${OPTARG} ;;
 	p) progsfile=${OPTARG} ;;
 	a) aurhelper=${OPTARG} ;;
@@ -13,6 +14,7 @@ while getopts ":a:r:b:p:h" o; do case "${o}" in
 esac done
 
 [ -z "$dotfilesrepo" ] && dotfilesrepo="https://github.com/fedfontana/dotto.git"
+[ -z "$configrepo" ] && configrepo="https://github.com/fedfontana/regolith-config"
 [ -z "$progsfile" ] && progsfile="https://raw.githubusercontent.com/fedfontana/fonta-bootstrap/master/progs.csv"
 [ -z "$aurhelper" ] && aurhelper="yay"
 [ -z "$repobranch" ] && repobranch="master"
@@ -118,13 +120,6 @@ putgitrepo()
 	sudo -u "$SUDO_USER" cp -rfT "$dir" "$2"
 }
 
-systembeepoff() 
-{ 
-	dialog --infobox "Getting rid of that retarded error beep sound..." 10 50
-	rmmod pcspkr
-	echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf ;
-}
-
 finalize()
 {
 	dialog --infobox "Preparing welcome message..." 4 50
@@ -153,13 +148,6 @@ refreshkeys || error "Error automatically refreshing Arch keyring. Consider doin
 dialog --title "FARBS Installation" --infobox "Installing packages which are required to install and configure other programs." 5 70
 pacman --noconfirm --needed -S git curl ntp zsh base-devel >/dev/null 2>&1
 
-#dialog --title "FARBS Installation" --infobox "Synchronizing system time to ensure successful and secure installation of software..." 4 70
-#ntpdate 0.us.pool.ntp.org >/dev/null 2>&1
-
-# Allow user to run sudo without password. Since AUR programs must be installed
-# in a fakeroot environment, this is required for all builds with AUR.
-#newperms "%wheel ALL=(ALL) NOPASSWD: ALL"
-
 # Make pacman and the AUR helper colorful and adds eye candy on the progress bar because why not.
 grep -q "^Color" /etc/pacman.conf || sed -i "s/^#Color$/Color/" /etc/pacman.conf
 grep -q "^VerbosePkgLists" /etc/pacman.conf || sed -i "s/^#VerbosePkgLists$/VerbosePkgLists/" /etc/pacman.conf
@@ -170,28 +158,19 @@ sed -i "s/-j2/-j$(nproc)/;s/^#MAKEFLAGS/MAKEFLAGS/" /etc/makepkg.conf
 manualinstall yay || error "Failed to install AUR helper."
 
 # The command that does all the installing. Reads the progs.csv file and
-# installs each needed program the way required. Be sure to run this only after
-# the user has been created and has priviledges to run sudo without a password
-# and all build dependencies are installed.
-
+# installs each needed program the way required
 installationloop
-
-#dialog --title "LARBS Installation" --infobox "Finally, installing \`libxft-bgra\` to enable color emoji in suckless software without crashes." 5 70
-#yes | sudo -u "$name" $aurhelper -S libxft-bgra-git >/dev/null 2>&1
 
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
+putgitrepo "$configrepo" "/home/$SUDO_USER" "$repobranch" #! should be a different variable
 
 #rm -f "/home/$SUDO_USER/README.md" "/home/$SUDO_USER/LICENSE" "/home/$SUDO_USER/FUNDING.yml"
 # make git ignore deleted LICENSE & README.md files
 #git update-index --assume-unchanged "/home/$name/README.md" "/home/$name/LICENSE" "/home/$name/FUNDING.yml" #! interesting?
 
-# Most important command! Get rid of the beep!
-#systembeepoff
-
 # Make zsh the default shell for the user.
 chsh -s /bin/zsh "$SUDO_USER" >/dev/null 2>&1
-#sudo -u "$name" mkdir -p "/home/$name/.cache/zsh/"
 
 # Tap to click
 #[ ! -f /etc/X11/xorg.conf.d/40-libinput.conf ] && printf 'Section "InputClass" #!
@@ -202,18 +181,6 @@ chsh -s /bin/zsh "$SUDO_USER" >/dev/null 2>&1
 #	# Enable left mouse button by tapping
 #	Option "Tapping" "on"
 #EndSection' > /etc/X11/xorg.conf.d/40-libinput.conf
-
-# Fix fluidsynth/pulseaudio issue.
-#grep -q "OTHER_OPTS='-a pulseaudio -m alsa_seq -r 48000'" /etc/conf.d/fluidsynth || #!
-#	echo "OTHER_OPTS='-a pulseaudio -m alsa_seq -r 48000'" >> /etc/conf.d/fluidsynth
-
-# Start/restart PulseAudio.
-#pkill -15 -x 'pulseaudio'; sudo -u "$SUDO_USER" pulseaudio --start
-
-# This line, overwriting the `newperms` command above will allow the user to run
-# serveral important commands, `shutdown`, `reboot`, updating, etc. without a password.
-#newperms "%wheel ALL=(ALL) ALL #LARBS
-#%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/paru,/usr/bin/pacman -Syyuw --noconfirm"
 
 # Last message! Install complete!
 finalize

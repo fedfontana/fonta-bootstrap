@@ -21,7 +21,7 @@ esac done
 
 ### FUNCTIONS ###
 
-installpkg(){ pacman --noconfirm --needed -S "$1" >/dev/null 2>&1 ;}
+installpkg(){ pacman --noconfirm --needed -S "$1" &>/dev/null ;}
 
 error() { printf "%s\n" "$1" >&2; exit 1; }
 
@@ -38,23 +38,23 @@ preinstallmsg()
 refreshkeys() 
 {
 	dialog --infobox "Refreshing Arch Keyring..." 4 40
-	pacman --noconfirm -S archlinux-keyring >/dev/null 2>&1
+	pacman --noconfirm -S archlinux-keyring &>/dev/null
 }
 
 old_manualinstall() #something in the last line doesnt work???
 { # Installs $1 manually. Used only for AUR helper here.
 	dialog --infobox "Installing \"$1\", an AUR helper..." 4 50
 	mkdir -p "/tmp/$1"
-	git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" >/dev/null 2>&1
-	sudo -u "$SUDO_USER" -D "/tmp/$1" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+	git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" &>/dev/null
+	sudo -u "$SUDO_USER" -D "/tmp/$1" makepkg --noconfirm -si &>/dev/null || return 1
 }
 
 manualinstall() 
 { # Installs $1 manually. Used only for AUR helper here.
 	dialog --infobox "Installing \"$1\", an AUR helper..." 4 50
-	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" >/dev/null 2>&1
+	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" &>/dev/null
 	cd "/tmp/$1"
-	sudo -u "$SUDO_USER" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+	sudo -u "$SUDO_USER" makepkg --noconfirm -si &>/dev/null || return 1
 	cd
 }
 
@@ -71,8 +71,8 @@ gitmakeinstall()
 	dialog --title "FARBS Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $(basename "$1") $2" 5 70
 	sudo -u "$SUDO_USER" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; sudo -u "$SUDO_USER" git pull --force origin master;}
 	cd "$dir" || exit 1
-	make >/dev/null 2>&1
-	make install >/dev/null 2>&1
+	make &>/dev/null
+	make install &>/dev/null
 	cd /tmp || return 1 ;
 }
 
@@ -80,14 +80,15 @@ aurinstall()
 {
 	dialog --title "FARBS Installation" --infobox "Installing \`$1\` ($n of $total) from the AUR. $1 $2" 5 70
 	echo "$aurinstalled" | grep -q "^$1$" && return 1 #! isnt this the same as --needed???
-	sudo -u "$SUDO_USER" $aurhelper -S --noconfirm "$1" >/dev/null 2>&1
+	sudo -u "$SUDO_USER" $aurhelper -S --noconfirm "$1" &>/dev/null
 }
 
 pipinstall() 
 {
 	dialog --title "FARBS Installation" --infobox "Installing the Python package \`$1\` ($n of $total). $1 $2" 5 70
-	[ -x "$(command -v "pip")" ] || installpkg python-pip >/dev/null 2>&1
-	yes | pip install "$1"
+	[ -x "$(command -v "pip")" ] || installpkg python-pip &>/dev/null
+	#yes | pip install "$1"
+	pip install --no-input "$1" # should be the same as the previous line
 }
 
 #npminstall() {}
@@ -116,7 +117,7 @@ putgitrepo()
 	dir=$(mktemp -d)
 	[ ! -d "$2" ] && mkdir -p "$2"
 	chown "$SUDO_USER":wheel "$dir" "$2"
-	sudo -u "$SUDO_USER" git clone --recursive -b "$branch" --depth 1 --recurse-submodules "$1" "$dir" >/dev/null 2>&1
+	sudo -u "$SUDO_USER" git clone --recursive -b "$branch" --depth 1 --recurse-submodules "$1" "$dir" &>/dev/null
 	sudo -u "$SUDO_USER" cp -rfT "$dir" "$2"
 }
 
@@ -146,7 +147,7 @@ preinstallmsg || error "User exited."
 refreshkeys || error "Error automatically refreshing Arch keyring. Consider doing so manually." #! da cambiare
 
 dialog --title "FARBS Installation" --infobox "Installing packages which are required to install and configure other programs." 5 70
-pacman --noconfirm --needed -S git curl ntp zsh base-devel >/dev/null 2>&1
+pacman --noconfirm --needed -S git curl ntp zsh base-devel &>/dev/null
 
 # Make pacman and the AUR helper colorful and adds eye candy on the progress bar because why not.
 grep -q "^Color" /etc/pacman.conf || sed -i "s/^#Color$/Color/" /etc/pacman.conf
@@ -163,14 +164,14 @@ installationloop
 
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
-putgitrepo "$configrepo" "/home/$SUDO_USER" "$repobranch" #! should be a different variable
+putgitrepo "$configrepo" "/home/$SUDO_USER" "$repobranch" #! should use a different variable other than repobranch?
 
 #rm -f "/home/$SUDO_USER/README.md" "/home/$SUDO_USER/LICENSE" "/home/$SUDO_USER/FUNDING.yml"
 # make git ignore deleted LICENSE & README.md files
 #git update-index --assume-unchanged "/home/$name/README.md" "/home/$name/LICENSE" "/home/$name/FUNDING.yml" #! interesting?
 
 # Make zsh the default shell for the user.
-chsh -s /bin/zsh "$SUDO_USER" >/dev/null 2>&1
+chsh -s /bin/zsh "$SUDO_USER" &>/dev/null
 
 # Tap to click
 #[ ! -f /etc/X11/xorg.conf.d/40-libinput.conf ] && printf 'Section "InputClass" #!

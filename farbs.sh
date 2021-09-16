@@ -173,6 +173,17 @@ putgitrepo "$configrepo" "/home/$SUDO_USER" "$repobranch" #! should use a differ
 # Make zsh the default shell for the user.
 chsh -s /bin/zsh "$SUDO_USER" &>/dev/null
 
+#! tmp lightdm stuff
+pacman -S --noconfirm --needed lightdm lightdm-webkit2-theme
+git clone https://github.com/Demonstrandum/Saluto.git /tmp/saluto
+cd /tmp/saluto
+sh install.sh
+cd
+systemctl enable lightdm
+#edit /etc/lightdm/ligthdm.conf
+#edit /etc/lightdm/lightdm-webkit2-greeter.conf
+
+
 # Tap to click
 #[ ! -f /etc/X11/xorg.conf.d/40-libinput.conf ] && printf 'Section "InputClass" #!
 #        Identifier "libinput touchpad catchall"

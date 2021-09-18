@@ -19,9 +19,25 @@ esac done
 [ -z "$aurhelper" ] && aurhelper="yay"
 [ -z "$repobranch" ] && repobranch="master"
 
+# Check distro and set $DISTRO
+DISTRO=$(cat /etc/*release | grep -w NAME | cut -d= -f2 | tr -d '"')
+if [ $DISTRO!="Ubuntu" && $DISTRO!="Arch Linux" ]
+then
+	error "You are not running on arch or ubuntu. The script will automatically exit"
+fi
+
 ### FUNCTIONS ###
 
-installpkg(){ pacman --noconfirm --needed -S "$1" &>/dev/null ;}
+is_arch(){ [ $DISTRO="Arch Linux" ] }
+
+installpkg() { 
+	if is_arch()
+	then
+		pacman --noconfirm --needed -S "$1" &>/dev/null 
+	else
+		apt install -y "$1" &>/dev/null
+	fi
+}
 
 error() { printf "%s\n" "$1" >&2; exit 1; }
 
@@ -69,7 +85,7 @@ gitmakeinstall()
 	progname="$(basename "$1" .git)"
 	dir="$repodir/$progname"
 	dialog --title "FARBS Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $(basename "$1") $2" 5 70
-	sudo -u "$SUDO_USER" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; sudo -u "$SUDO_USER" git pull --force origin master;}
+	sudo -u "$SUDO_USER" git clone --depth 1 "$1" "$dir" &>/dev/null || { cd "$dir" || return 1 ; sudo -u "$SUDO_USER" git pull --force origin master;}
 	cd "$dir" || exit 1
 	make &>/dev/null
 	make install &>/dev/null
@@ -86,7 +102,7 @@ aurinstall()
 pipinstall() 
 {
 	dialog --title "FARBS Installation" --infobox "Installing the Python package \`$1\` ($n of $total). $1 $2" 5 70
-	[ -x "$(command -v "pip")" ] || installpkg python-pip &>/dev/null
+	[ -x "$(command -v "pip")" ] || installpkg python-pip &>/dev/null #package name for ubuntu might be python3-pip
 	#yes | pip install "$1"
 	pip install --no-input "$1" # should be the same as the previous line
 }
@@ -130,10 +146,14 @@ finalize()
 ### THE ACTUAL SCRIPT ###
 
 # Update and install dialog.
-pacman -Syu --noconfirm || error "Are you sure you're running this as the root user, are on an Arch-based distribution and have an internet connection?"
-
-# Check if user is root on Arch distro. 
-pacman --noconfirm --needed -Sy dialog 
+if is_arch()
+then
+	pacman -Syu --noconfirm || error "Are you sure you're running this as the root user and have an internet connection?"
+	pacman --noconfirm --needed -S dialog
+else
+	apt update && upgrade -y
+	#sudo apt update dialog
+fi
 
 # Welcome user and pick dotfiles.
 welcomemsg || error "User exited."
@@ -144,19 +164,37 @@ preinstallmsg || error "User exited."
 ### The rest of the script requires no user input.
 
 # Refresh Arch keyrings.
-refreshkeys || error "Error automatically refreshing Arch keyring. Consider doing so manually." #! da cambiare
+if is_arch()
+then
+	refreshkeys || error "Error automatically refreshing Arch keyring. Consider doing so manually." #! da cambiare
+fi
 
 dialog --title "FARBS Installation" --infobox "Installing packages which are required to install and configure other programs." 5 70
-pacman --noconfirm --needed -S git curl ntp zsh base-devel &>/dev/null
 
-# Make pacman and the AUR helper colorful and adds eye candy on the progress bar because why not.
-grep -q "^Color" /etc/pacman.conf || sed -i "s/^#Color$/Color/" /etc/pacman.conf
-grep -q "^VerbosePkgLists" /etc/pacman.conf || sed -i "s/^#VerbosePkgLists$/VerbosePkgLists/" /etc/pacman.conf
+if is_arch()
+then
+	pacman --noconfirm --needed -S git curl ntp zsh base-devel &>/dev/null
+else
+	apt install -y git curl ntp zsh base-devel &>/dev/null #TODO check package names
+fi
+
+if is_arch()
+then
+	# Make pacman and the AUR helper colorful and adds eye candy on the progress bar because why not.
+	grep -q "^Color" /etc/pacman.conf || sed -i "s/^#Color$/Color/" /etc/pacman.conf
+	grep -q "^VerbosePkgLists" /etc/pacman.conf || sed -i "s/^#VerbosePkgLists$/VerbosePkgLists/" /etc/pacman.conf
+fi
 
 # Use all cores for compilation.
 sed -i "s/-j2/-j$(nproc)/;s/^#MAKEFLAGS/MAKEFLAGS/" /etc/makepkg.conf
 
-manualinstall yay || error "Failed to install AUR helper."
+if is_arch()
+then
+	manualinstall yay || error "Failed to install AUR helper."
+else
+	echo ''
+	#add ppas?
+fi
 
 # The command that does all the installing. Reads the progs.csv file and
 # installs each needed program the way required

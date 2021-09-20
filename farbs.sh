@@ -19,24 +19,9 @@ esac done
 [ -z "$aurhelper" ] && aurhelper="yay"
 [ -z "$repobranch" ] && repobranch="master"
 
-# Check distro and set $DISTRO
-DISTRO=$(cat /etc/*release | grep -w NAME | cut -d= -f2 | tr -d '"')
-if [ $DISTRO!="Ubuntu" && $DISTRO!="Arch Linux" ]
-then
-	error "You are not running on arch or ubuntu. The script will automatically exit"
-fi
-
 ### FUNCTIONS ###
-
-is_arch(){ [ $DISTRO="Arch Linux" ] }
-
 installpkg() { 
-	if is_arch()
-	then
-		pacman --noconfirm --needed -S "$1" &>/dev/null 
-	else
-		apt install -y "$1" &>/dev/null
-	fi
+	pacman --noconfirm --needed -S "$1" &>/dev/null 
 }
 
 error() { printf "%s\n" "$1" >&2; exit 1; }
@@ -146,14 +131,8 @@ finalize()
 ### THE ACTUAL SCRIPT ###
 
 # Update and install dialog.
-if is_arch()
-then
-	pacman -Syu --noconfirm || error "Are you sure you're running this as the root user and have an internet connection?"
-	pacman --noconfirm --needed -S dialog
-else
-	apt update && upgrade -y
-	#sudo apt update dialog
-fi
+pacman -Syu --noconfirm || error "Are you sure you're running this on an arch machine as the root user and have an internet connection?"
+pacman --noconfirm --needed -S dialog
 
 # Welcome user and pick dotfiles.
 welcomemsg || error "User exited."
@@ -164,37 +143,20 @@ preinstallmsg || error "User exited."
 ### The rest of the script requires no user input.
 
 # Refresh Arch keyrings.
-if is_arch()
-then
-	refreshkeys || error "Error automatically refreshing Arch keyring. Consider doing so manually." #! da cambiare
-fi
+refreshkeys || error "Error automatically refreshing Arch keyring. Consider doing so manually." #! da cambiare
 
 dialog --title "FARBS Installation" --infobox "Installing packages which are required to install and configure other programs." 5 70
 
-if is_arch()
-then
-	pacman --noconfirm --needed -S git curl ntp zsh base-devel &>/dev/null
-else
-	apt install -y git curl ntp zsh base-devel &>/dev/null #TODO check package names
-fi
+pacman --noconfirm --needed -S git curl ntp zsh base-devel &>/dev/null
 
-if is_arch()
-then
-	# Make pacman and the AUR helper colorful and adds eye candy on the progress bar because why not.
-	grep -q "^Color" /etc/pacman.conf || sed -i "s/^#Color$/Color/" /etc/pacman.conf
-	grep -q "^VerbosePkgLists" /etc/pacman.conf || sed -i "s/^#VerbosePkgLists$/VerbosePkgLists/" /etc/pacman.conf
-fi
+# Make pacman and the AUR helper colorful and adds eye candy on the progress bar because why not.
+grep -q "^Color" /etc/pacman.conf || sed -i "s/^#Color$/Color/" /etc/pacman.conf
+grep -q "^VerbosePkgLists" /etc/pacman.conf || sed -i "s/^#VerbosePkgLists$/VerbosePkgLists/" /etc/pacman.conf
 
 # Use all cores for compilation.
 sed -i "s/-j2/-j$(nproc)/;s/^#MAKEFLAGS/MAKEFLAGS/" /etc/makepkg.conf
 
-if is_arch()
-then
-	manualinstall yay || error "Failed to install AUR helper."
-else
-	echo ''
-	#add ppas?
-fi
+manualinstall yay || error "Failed to install AUR helper."
 
 # The command that does all the installing. Reads the progs.csv file and
 # installs each needed program the way required
@@ -212,12 +174,12 @@ putgitrepo "$configrepo" "/home/$SUDO_USER" "$repobranch" #! should use a differ
 chsh -s /bin/zsh "$SUDO_USER" &>/dev/null
 
 #! tmp lightdm stuff
-pacman -S --noconfirm --needed lightdm lightdm-webkit2-theme
-git clone https://github.com/Demonstrandum/Saluto.git /tmp/saluto
-cd /tmp/saluto
-sh install.sh
-cd
-systemctl enable lightdm
+#pacman -S --noconfirm --needed lightdm lightdm-webkit2-theme
+#git clone https://github.com/Demonstrandum/Saluto.git /tmp/saluto
+#cd /tmp/saluto
+#sh install.sh
+#cd
+#systemctl enable lightdm
 #edit /etc/lightdm/ligthdm.conf
 #edit /etc/lightdm/lightdm-webkit2-greeter.conf
 

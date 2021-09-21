@@ -28,6 +28,15 @@ putgitrepo()
 	sudo -u "$SUDO_USER" cp -rfT "$dir" "$2"
 }
 
+manualinstall() 
+{ # Installs $1 manually. Used only for AUR helper here.
+	dialog --infobox "Installing \"$1\", an AUR helper..." 4 50
+	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" &>/dev/null
+	cd "/tmp/$1"
+	sudo -u "$SUDO_USER" makepkg --noconfirm -si &>/dev/null || return 1
+	cd
+}
+
 ### THE ACTUAL SCRIPT ###
 
 # Update and install dialog.
@@ -47,7 +56,7 @@ grep -q "^VerbosePkgLists" /etc/pacman.conf || sed -i "s/^#VerbosePkgLists$/Verb
 # Use all cores for compilation.
 sed -i "s/-j2/-j$(nproc)/;s/^#MAKEFLAGS/MAKEFLAGS/" /etc/makepkg.conf
 
-{ sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" && cd "/tmp/$1" && sudo -u "$SUDO_USER" makepkg --noconfirm -si &&  cd } || error "Error installing an aur helper. Quitting"
+manualinstall yay || error "Failed to install AUR helper."
 
 # The command that does all the installing. Reads the progs.csv file and
 # installs each needed program the way required

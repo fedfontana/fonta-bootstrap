@@ -174,15 +174,30 @@ putgitrepo "$configrepo" "/home/$SUDO_USER" "$repobranch" #! should use a differ
 chsh -s /bin/zsh "$SUDO_USER" &>/dev/null
 
 #! tmp lightdm stuff
-#pacman -S --noconfirm --needed lightdm lightdm-webkit2-theme
-#git clone https://github.com/Demonstrandum/Saluto.git /tmp/saluto
-#cd /tmp/saluto
-#sh install.sh
-#cd
-#systemctl enable lightdm
-#edit /etc/lightdm/ligthdm.conf
-#edit /etc/lightdm/lightdm-webkit2-greeter.conf
+pacman -S --noconfirm --needed lightdm lightdm-webkit2-theme
+git clone https://github.com/Demonstrandum/Saluto.git /tmp/saluto
+cd /tmp/saluto
+sh install.sh
+cd
+systemctl enable lightdm
+sed -i "s/^greeter-session=example-gtk-gnome$/greeter-session=lightdm-webkit2-greeter/" /etc/lightdm/lightdm.conf
+sed -i "s/^webkit_theme.*/webkit_theme = sequoia/g" /etc/lightdm/lightdm-webkit2-greeter.conf
+#TODO add .desktop file
 
+sed -i "s/^i3$/xrdb \$HOME\/\.Xresources\ni3 -c \$HOME\/\.config\/i3\/config/" /usr/bin/i3-gnome-flashback
+
+sudo pacman -S --noconfirm ttf-jetbrains-mono adobe-source-code-pro-fonts
+#download and set white cursor theme
+pacman -S papirus-icon-theme
+yay -S kripton-theme-git
+
+gsettings set org.gnome.desktop.session idel-delay 3600
+gsettings set org.gnome.desktop.screensaver lock-delay 180
+gsettings set org.gnome.desktop.interface icon-theme ""
+gsettings set org.gnome.desktop.interface gtk-theme "Kripton"
+gsettings set org.gnome.desktop.wm.preferences theme "Kripton"
+
+su -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 
 # Tap to click
 #[ ! -f /etc/X11/xorg.conf.d/40-libinput.conf ] && printf 'Section "InputClass" #!

@@ -30,9 +30,9 @@ putgitrepo()
 
 manualinstall() 
 { # Installs $1 manually. Used only for AUR helper here.
-	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" &>/dev/null
+	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1"
 	cd "/tmp/$1"
-	sudo -u "$SUDO_USER" makepkg --noconfirm -si &>/dev/null || return 1
+	sudo -u "$SUDO_USER" makepkg --noconfirm -si || return 1
 	cd
 }
 

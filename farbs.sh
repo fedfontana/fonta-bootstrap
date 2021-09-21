@@ -66,7 +66,9 @@ pacman -S --needed --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									gnome-sistem-monitor firefox vlc i3blocks rofi network-manager-applet telegram-desktop wget alacritty gnome-control-center \
 									gnome-tweajs bat gnome-boxes imagemagick jq lm_sensors npm ranger tree nautilus gnome-screenshot gnome-power-manager \
 									gnome-disk-utility playerctl acpi xprop lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts papirus-icon-theme
-sudo -u "$SUDO_USER" $aurhelper -S --noconfirm --needed i3-gnome-flashback picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git
+
+#! Consider installing i3-gnome-flashbac as installing it with yay requires you to type your root pwd
+sudo -u "$SUDO_USER" $aurhelper -S --noconfirm --needed i3-gnome-flashback picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git
 
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
@@ -79,11 +81,7 @@ putgitrepo "$configrepo" "/home/$SUDO_USER" "move_arch_stuff"
 # Make zsh the default shell for the user.
 chsh -s /bin/zsh "$SUDO_USER"
 
-# Install lightdm theme, edit lightdm config files and enable lightdm
-git clone https://github.com/Demonstrandum/Saluto.git /tmp/saluto
-cd /tmp/saluto
-sh install.sh
-cd
+# Edit lightdm config files and enable lightdm
 systemctl enable lightdm
 sed -i "s/^greeter-session=example-gtk-gnome$/greeter-session=lightdm-webkit2-greeter/" /etc/lightdm/lightdm.conf
 sed -i "s/^webkit_theme.*/webkit_theme = sequoia/g" /etc/lightdm/lightdm-webkit2-greeter.conf

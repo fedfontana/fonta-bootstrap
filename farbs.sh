@@ -92,23 +92,23 @@ sed -i "s/^i3$/ [ -f \$HOME\/\.Xresources ] && xrdb \$HOME\/\.Xresources\ni3 -c 
 pacman -S --needed --noconfirm 
 
 # Change settings
-gsettings set org.gnome.desktop.session idel-delay 3600
-gsettings set org.gnome.desktop.screensaver lock-delay 180
-gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
-gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
-gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing true
-gsettings set org.gnome.settings-daemon.plugins.power lid-close-ac-action 'nothing'
-gsettings set org.gnome.settings-daemon.plugins.power lid-close-suspend-with-external-monitor 'nothing'
-gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
-gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click true
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.session idel-delay 3600
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.screensaver lock-delay 180
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing true
+dbus-launch --exit-with-session gsettings set org.gnome.settings-daemon.plugins.power lid-close-ac-action 'nothing'
+dbus-launch --exit-with-session gsettings set org.gnome.settings-daemon.plugins.power lid-close-suspend-with-external-monitor 'nothing'
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click true
 
 # Theming
 #TODO download and set white cursor theme
 #TODO Install a "normal" font and set it as default
 #TODO Install the nerd-fonts versions of JetBrains Mono and Source Code Pro
-gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
-gsettings set org.gnome.desktop.interface gtk-theme "Kripton"
-gsettings set org.gnome.desktop.wm.preferences theme "Kripton"
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-theme "Kripton"
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.wm.preferences theme "Kripton"
 
 # Download and install vim-plug
 sudo -u "$SUDO_USER" sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'

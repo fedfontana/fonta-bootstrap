@@ -15,7 +15,6 @@ esac done
 
 [ -z "$dotfilesrepo" ] && dotfilesrepo="https://github.com/fedfontana/dotto.git"
 [ -z "$configrepo" ] && configrepo="https://github.com/fedfontana/regolith-config"
-[ -z "$progsfile" ] && progsfile="https://raw.githubusercontent.com/fedfontana/fonta-bootstrap/master/progs.csv"
 [ -z "$aurhelper" ] && aurhelper="yay"
 [ -z "$repobranch" ] && repobranch="master"
 
@@ -53,28 +52,10 @@ old_manualinstall() #something in the last line doesnt work???
 manualinstall() 
 { # Installs $1 manually. Used only for AUR helper here.
 	dialog --infobox "Installing \"$1\", an AUR helper..." 4 50
-	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1" &>/dev/null
+	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1"
 	cd "/tmp/$1"
-	sudo -u "$SUDO_USER" makepkg --noconfirm -si &>/dev/null || return 1
+	sudo -u "$SUDO_USER" makepkg --noconfirm -si || return 1
 	cd
-}
-
-maininstall() 
-{ # Installs all needed programs from main repo.
-	dialog --title "FARBS Installation" --infobox "Installing \`$1\` ($n of $total). $1 $2" 5 70
-	installpkg "$1"
-}
-
-gitmakeinstall() 
-{
-	progname="$(basename "$1" .git)"
-	dir="$repodir/$progname"
-	dialog --title "FARBS Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $(basename "$1") $2" 5 70
-	sudo -u "$SUDO_USER" git clone --depth 1 "$1" "$dir" &>/dev/null || { cd "$dir" || return 1 ; sudo -u "$SUDO_USER" git pull --force origin master;}
-	cd "$dir" || exit 1
-	make &>/dev/null
-	make install &>/dev/null
-	cd /tmp || return 1 ;
 }
 
 aurinstall() 
@@ -84,31 +65,10 @@ aurinstall()
 	sudo -u "$SUDO_USER" $aurhelper -S --noconfirm "$1" &>/dev/null
 }
 
-pipinstall() 
-{
-	dialog --title "FARBS Installation" --infobox "Installing the Python package \`$1\` ($n of $total). $1 $2" 5 70
-	[ -x "$(command -v "pip")" ] || installpkg python-pip &>/dev/null #package name for ubuntu might be python3-pip
-	#yes | pip install "$1"
-	pip install --no-input "$1" # should be the same as the previous line
-}
-
-#npminstall() {}
-
 installationloop() 
 {
-	([ -f "$progsfile" ] && cp "$progsfile" /tmp/progs.csv) || curl -Ls "$progsfile" | sed '/^#/d' > /tmp/progs.csv
-	total=$(wc -l < /tmp/progs.csv)
-	aurinstalled=$(pacman -Qqm)
-	while IFS=, read -r tag program comment; do
-		n=$((n+1))
-		echo "$comment" | grep -q "^\".*\"$" && comment="$(echo "$comment" | sed "s/\(^\"\|\"$\)//g")"
-		case "$tag" in
-			"A") aurinstall "$program" "$comment" ;;
-			"G") gitmakeinstall "$program" "$comment" ;;
-			"P") pipinstall "$program" "$comment" ;;
-			*) maininstall "$program" "$comment" ;;
-		esac
-	done < /tmp/progs.csv ;
+	pacman -S --needed --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit xorg-xprop bc arandr libnotify dunst feh ffmpeg gnome-keyring neovim man-db pulseaudio-alsa pulsemixer unclutter unrar unzip xclip youtube-dl fzf xorg-xbacklight moreutils onefetch htop neofetch i3-gaps gnome-flashback gnome-sistem-monitor firefox vlc i3blocks rofi network-manager-applet telegram-desktop wget alacritty gnome-control-center gnome-tweajs bat gnome-boxes imagemagick jq lm_sensors npm ranger tree nautilus gnome-screenshot gnome-power-manager gnome-disk-utility playerctl acpi xprop
+	sudo -u "$SUDO_USER" $aurhelper -S --noconfirm --needed i3-gnome-flashback picom-ibhagwan-git spotify visual-studio-code-insiders-bin 
 }
 
 putgitrepo() 
@@ -118,7 +78,7 @@ putgitrepo()
 	dir=$(mktemp -d)
 	[ ! -d "$2" ] && mkdir -p "$2"
 	chown "$SUDO_USER":wheel "$dir" "$2"
-	sudo -u "$SUDO_USER" git clone --recursive -b "$branch" --depth 1 --recurse-submodules "$1" "$dir" &>/dev/null
+	sudo -u "$SUDO_USER" git clone --recursive -b "$branch" --depth 1 --recurse-submodules "$1" "$dir"
 	sudo -u "$SUDO_USER" cp -rfT "$dir" "$2"
 }
 
@@ -143,11 +103,11 @@ preinstallmsg || error "User exited."
 ### The rest of the script requires no user input.
 
 # Refresh Arch keyrings.
-refreshkeys || error "Error automatically refreshing Arch keyring. Consider doing so manually." #! da cambiare
+pacman --noconfirm -S archlinux-keyring || error "Error automatically refreshing Arch keyring. Consider doing so manually." #! da cambiare
 
 dialog --title "FARBS Installation" --infobox "Installing packages which are required to install and configure other programs." 5 70
 
-pacman --noconfirm --needed -S git curl ntp zsh base-devel &>/dev/null
+pacman --noconfirm --needed -S git curl ntp zsh base-devel
 
 # Make pacman and the AUR helper colorful and adds eye candy on the progress bar because why not.
 grep -q "^Color" /etc/pacman.conf || sed -i "s/^#Color$/Color/" /etc/pacman.conf
@@ -164,14 +124,14 @@ installationloop
 
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
-putgitrepo "$configrepo" "/home/$SUDO_USER" "$repobranch" #! should use a different variable other than repobranch?
+putgitrepo "$configrepo" "/home/$SUDO_USER" "move_arch_stuff"
 
 #rm -f "/home/$SUDO_USER/README.md" "/home/$SUDO_USER/LICENSE" "/home/$SUDO_USER/FUNDING.yml"
 # make git ignore deleted LICENSE & README.md files
 #git update-index --assume-unchanged "/home/$name/README.md" "/home/$name/LICENSE" "/home/$name/FUNDING.yml" #! interesting?
 
 # Make zsh the default shell for the user.
-chsh -s /bin/zsh "$SUDO_USER" &>/dev/null
+chsh -s /bin/zsh "$SUDO_USER"
 
 #! tmp lightdm stuff
 pacman -S --noconfirm --needed lightdm lightdm-webkit2-theme

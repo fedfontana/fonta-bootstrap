@@ -44,7 +44,7 @@ pacman -Syu --noconfirm || error "Are you sure you're running this on an arch ma
 # Refresh Arch keyrings.
 pacman --noconfirm -S archlinux-keyring || error "Error automatically refreshing Arch keyring. Consider doing so manually."
 
-dialog --title "FARBS Installation" --infobox "Installing packages which are required to install and configure other programs." 5 70
+timedatectl set-ntp true
 
 pacman --noconfirm --needed -S git curl ntp zsh base-devel
 
@@ -68,7 +68,12 @@ pacman -S --needed --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									gnome-disk-utility playerctl acpi xprop lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts papirus-icon-theme
 
 #! Consider installing i3-gnome-flashbac as installing it with yay requires you to type your root pwd
-sudo -u "$SUDO_USER" $aurhelper -S --noconfirm --needed i3-gnome-flashback picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git
+sudo -u "$SUDO_USER" $aurhelper -S --noconfirm --needed picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git
+
+sudo -u "$SUDO_USER" git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
+cd /tmp/i3gf
+make install
+cd
 
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"

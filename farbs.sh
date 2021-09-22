@@ -58,12 +58,12 @@ sed -i "s/-j2/-j$(nproc)/;s/^#MAKEFLAGS/MAKEFLAGS/" /etc/makepkg.conf
 # Let anyone run all commands (needed for yay) without password
 sudo sed --in-place 's/^#\s*\(%wheel\s\+ALL=(ALL)\s\+NOPASSWD:\s\+ALL\)/\1/' /etc/sudoers
 
-manualinstall yay || error "Failed to install AUR helper."
+manualinstall yay-bin || error "Failed to install AUR helper."
 
 # The command that does all the installing. Reads the progs.csv file and
 # installs each needed program the way required
 #TODO add japanese fonts
-pacman -S --needed --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
+pacman -S --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									xorg-xprop bc arandr libnotify dunst feh ffmpeg gnome-keyring neovim man-db pulseaudio-alsa pulsemixer \
 									unclutter unrar unzip xclip youtube-dl fzf xorg-xbacklight moreutils onefetch htop neofetch i3-gaps gnome-flashback \
 									gnome-system-monitor firefox vlc i3blocks rofi network-manager-applet telegram-desktop wget alacritty gnome-control-center \

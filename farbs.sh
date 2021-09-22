@@ -80,11 +80,10 @@ cd /tmp/i3gf
 sudo make install
 cd
 
-#TODO fix branch?
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
 #TODO this breaks stuff -- remote branch not found in upstream origin
-putgitrepo "$configrepo" "/home/$SUDO_USER" "move_arch_stuff"
+putgitrepo "$configrepo" "/home/$SUDO_USER" "move_stuff_arch"
 
 #rm -f "/home/$SUDO_USER/README.md" "/home/$SUDO_USER/LICENSE" "/home/$SUDO_USER/FUNDING.yml"
 # make git ignore deleted LICENSE & README.md files

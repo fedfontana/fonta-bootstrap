@@ -67,14 +67,16 @@ pacman -S --needed --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									gnome-tweaks bat gnome-boxes imagemagick jq lm_sensors npm ranger tree nautilus gnome-screenshot gnome-power-manager \
 									gnome-disk-utility playerctl acpi xprop lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts papirus-icon-theme
 
-#! Consider installing i3-gnome-flashbac as installing it with yay requires you to type your root pwd
-sudo -u "$SUDO_USER" $aurhelper -S --noconfirm --needed picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git
+#TODO fix something might be broken - some dependencies maybe?
+#TODO fix stop asking my root pwd!
+sudo -u "$SUDO_USER" $aurhelper -S --noconfirm picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git
 
 sudo -u "$SUDO_USER" git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
 cd /tmp/i3gf
 make install
 cd
 
+#TODO fix branch?
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
 putgitrepo "$configrepo" "/home/$SUDO_USER" "move_arch_stuff"

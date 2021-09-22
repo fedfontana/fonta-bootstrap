@@ -62,7 +62,6 @@ manualinstall yay-bin || error "Failed to install AUR helper."
 
 # The command that does all the installing. Reads the progs.csv file and
 # installs each needed program the way required
-#TODO add japanese fonts
 pacman -S --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									xorg-xprop bc arandr libnotify dunst feh ffmpeg gnome-keyring neovim man-db pulseaudio-alsa pulsemixer \
 									unclutter unrar unzip xclip youtube-dl fzf xorg-xbacklight moreutils onefetch htop neofetch i3-gaps gnome-flashback \
@@ -71,8 +70,6 @@ pacman -S --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									gnome-disk-utility playerctl acpi xprop lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts \
 									papirus-icon-theme gnome-power-manager
 
-#TODO fix something might be broken - some dependencies maybe?
-#TODO fix stop asking my root pwd!
 sudo -u "$SUDO_USER" $aurhelper -S --noconfirm picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git
 
 sudo -u "$SUDO_USER" git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
@@ -82,7 +79,6 @@ cd
 
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
-#TODO this breaks stuff -- remote branch not found in upstream origin
 putgitrepo "$configrepo" "/home/$SUDO_USER" "move_stuff_arch"
 
 #rm -f "/home/$SUDO_USER/README.md" "/home/$SUDO_USER/LICENSE" "/home/$SUDO_USER/FUNDING.yml"
@@ -112,9 +108,6 @@ dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-en
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click true
 
 # Theming
-#TODO download and set white cursor theme
-#TODO Install a "normal" font and set it as default
-#TODO Install the nerd-fonts versions of JetBrains Mono and Source Code Pro
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-theme "Kripton"
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.wm.preferences theme "Kripton"

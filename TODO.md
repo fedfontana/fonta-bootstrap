@@ -1,0 +1,13 @@
+- yay installation still asks for pwd (maybe fixed, have to try script first)
+- gsettings doesnt update settings
+- some aur packages still ask for pwd even if the script sets nopasswd for everyone
+- some warningabout some packages (aur packages ?)
+- there must be and error in the packages list
+- script somehow doesnt install lightdm and lightdm-webkit2-greeter even if they are in the pacman packages list ???
+- add japanese fonts
+- some kind of dependency cicle?
+- one of the config repos breaks stuff??
+- install/change cursor theme to a white one
+- install a non-mono font and set it as main font
+- install the nerd-fonts variants of JetBrains Mono and Source Code Pro
+- i3blocks doesnt work - is this cause by some missing dependencies?

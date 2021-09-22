@@ -63,8 +63,8 @@ manualinstall yay || error "Failed to install AUR helper."
 pacman -S --needed --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									xorg-xprop bc arandr libnotify dunst feh ffmpeg gnome-keyring neovim man-db pulseaudio-alsa pulsemixer \
 									unclutter unrar unzip xclip youtube-dl fzf xorg-xbacklight moreutils onefetch htop neofetch i3-gaps gnome-flashback \
-									gnome-sistem-monitor firefox vlc i3blocks rofi network-manager-applet telegram-desktop wget alacritty gnome-control-center \
-									gnome-tweajs bat gnome-boxes imagemagick jq lm_sensors npm ranger tree nautilus gnome-screenshot gnome-power-manager \
+									gnome-system-monitor firefox vlc i3blocks rofi network-manager-applet telegram-desktop wget alacritty gnome-control-center \
+									gnome-tweaks bat gnome-boxes imagemagick jq lm_sensors npm ranger tree nautilus gnome-screenshot gnome-power-manager \
 									gnome-disk-utility playerctl acpi xprop lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts papirus-icon-theme
 
 #! Consider installing i3-gnome-flashbac as installing it with yay requires you to type your root pwd

@@ -68,7 +68,8 @@ pacman -S --needed --noconfirm xorg xorg-server xorg-xwininfo xorg-xinit \
 									unclutter unrar unzip xclip youtube-dl fzf xorg-xbacklight moreutils onefetch htop neofetch i3-gaps gnome-flashback \
 									gnome-system-monitor firefox vlc i3blocks rofi network-manager-applet telegram-desktop wget alacritty gnome-control-center \
 									gnome-tweaks bat gnome-boxes imagemagick jq lm_sensors npm ranger tree nautilus gnome-screenshot gnome-power-manager \
-									gnome-disk-utility playerctl acpi xprop lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts papirus-icon-theme
+									gnome-disk-utility playerctl acpi xprop lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts \
+									papirus-icon-theme gnome-power-manager
 
 #TODO fix something might be broken - some dependencies maybe?
 #TODO fix stop asking my root pwd!
@@ -76,12 +77,13 @@ sudo -u "$SUDO_USER" $aurhelper -S --noconfirm picom-ibhagwan-git spotify visual
 
 sudo -u "$SUDO_USER" git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
 cd /tmp/i3gf
-make install
+sudo make install
 cd
 
 #TODO fix branch?
 # Install the dotfiles in the user's home directory
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "$repobranch"
+#TODO this breaks stuff -- remote branch not found in upstream origin
 putgitrepo "$configrepo" "/home/$SUDO_USER" "move_arch_stuff"
 
 #rm -f "/home/$SUDO_USER/README.md" "/home/$SUDO_USER/LICENSE" "/home/$SUDO_USER/FUNDING.yml"
@@ -97,12 +99,10 @@ sed -i "s/^greeter-session=example-gtk-gnome$/greeter-session=lightdm-webkit2-gr
 sed -i "s/^webkit_theme.*/webkit_theme = sequoia/g" /etc/lightdm/lightdm-webkit2-greeter.conf
 
 # Edit i3 gnome flashback startup script to source Xresources
-sed -i "s/^i3$/ [ -f \$HOME\/\.Xresources ] && xrdb \$HOME\/\.Xresources\ni3 -c \$HOME\/\.config\/i3\/config/" /usr/bin/i3-gnome-flashback
-
-pacman -S --needed --noconfirm 
+sed -i "s/^i3$/[ -f \$HOME\/\.Xresources ] \&\& xrdb \$HOME\/\.Xresources\ni3 -c \$HOME\/\.config\/i3\/config/" /usr/bin/i3-gnome-flashback
 
 # Change settings
-dbus-launch --exit-with-session gsettings set org.gnome.desktop.session idel-delay 3600
+dbus-launch --exit-with-session gsettings set org.gnome.desktop.session idle-delay 3600
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.screensaver lock-delay 180
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad click-method areas

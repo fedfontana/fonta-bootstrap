@@ -73,8 +73,10 @@ pacman -S --noconfirm --needed xorg xorg-server xorg-xwininfo xorg-xinit \
 									gnome-disk-utility playerctl acpi lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts \
 									papirus-icon-theme bat
 
+#TODO split it up in multiple smaller pacman cmds
 pacman -S --needed --noconfirm sysstat
 
+#TODO picom installation somehow still asks for pwd
 sudo -u "$SUDO_USER" $aurhelper -S --needed --noconfirm picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git remontoire-git
 
 sudo -u "$SUDO_USER" git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
@@ -94,7 +96,7 @@ putgitrepo "$configrepo" "/home/$SUDO_USER" "move_stuff_arch"
 chsh -s /bin/zsh "$SUDO_USER"
 
 # Edit lightdm config files and enable lightdm
-#TODO smh it didnt work the first time, had to re-type it -- maybe enable it after changing the settings?
+#TODO somehow it didnt work the first time, had to re-type it -- maybe enable it after changing the settings?
 systemctl enable lightdm
 sed -i "s/#greeter-session=example-gtk-gnome$/greeter-session=lightdm-webkit2-greeter/" /etc/lightdm/lightdm.conf
 sed -i "s/^webkit_theme.*/webkit_theme = sequoia/g" /etc/lightdm/lightdm-webkit2-greeter.conf
@@ -144,3 +146,4 @@ sudo sed -i 's/^\s*\(%wheel\s\+ALL=(ALL)\s\+NOPASSWD:\s\+ALL\)$/#\1/' /etc/sudoe
 #TODO download pop shell in order to have a fallback de and setup that session 
 #TODO remove "useless" .desktop files from /usr/share/xsessions 
 #TODO change session names (/usr/share/xsessions)
+#TODO rank mirrors before starting the actual script?

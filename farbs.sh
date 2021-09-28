@@ -62,23 +62,40 @@ sed -i 's/^#\s*\(%wheel\s\+ALL=(ALL)\s\+NOPASSWD:\s\+ALL\)/\1/' /etc/sudoers
 manualinstall yay-bin || error "Failed to install AUR helper."
 
 # The command that does all the installing. Reads the progs.csv file and
-# installs each needed program the way required
-#TODO check what's already in the xorg (and gnome-flashback) meta-package
-#TODO missing some i3blocks script dependencies
-pacman -S --noconfirm --needed xorg xorg-server xorg-xwininfo xorg-xinit \
-									xorg-xprop bc arandr libnotify dunst feh ffmpeg gnome-keyring neovim man-db pulseaudio-alsa pulsemixer \
-									unclutter unrar unzip xclip youtube-dl fzf xorg-xbacklight moreutils onefetch htop neofetch i3-gaps gnome-flashback \
-									gnome-system-monitor firefox vlc i3blocks rofi network-manager-applet telegram-desktop wget alacritty gnome-control-center \
-									gnome-tweaks bat gnome-boxes imagemagick jq lm_sensors npm ranger tree nautilus gnome-screenshot gnome-power-manager \
-									gnome-disk-utility playerctl acpi lightdm lightdm-webkit2-greeter ttf-jetbrains-mono adobe-source-code-pro-fonts \
-									papirus-icon-theme bat
+# X.org
+pacman -S --noconfirm --needed xorg xorg-xinit
 
-#TODO split it up in multiple smaller pacman cmds
-pacman -S --needed --noconfirm sysstat
+# Strictly gnome stuff
+pacman -S --noconfirm --needed gnome-flashback gnome-system-monitor gnome-control-center gnome-tweaks gnome-keyring gnome-power-manager gnome-disk-utility 
 
-#TODO picom installation somehow still asks for pwd
-sudo -u "$SUDO_USER" $aurhelper -S --needed --noconfirm picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git remontoire-git
+# System stuff
+pacman -S --needed --noconfirm dunst feh pulseaudio-alsa pulsemixer unclutter i3-gaps i3blocks rofi network-manager-applet gnome-screenshot
 
+# Lightdm stuff
+pacman -S --needed --noconfirm lightdm lightdm-webkit2-greeter 
+
+# Fonts
+pacman -S --needed --noconfirm ttf-jetbrains-mono adobe-source-code-pro-fonts adobe-source-han-sans-jp-fonts adobe-source-han-kr-fonts adobe-source-han-cn-fonts 
+
+# Theming
+pacman -S --needed --noconfirm papirus-icon-theme
+
+# Terminal stuff
+pacman -S --needed --noconfirm unrar unzip xclip youtube-dl fzf moreutils wget bat imagemagick lm_sensors tree onefetch htop neofetch neovim ranger findutils mlocate
+
+# Graphical stuff
+pacman -S --needed --noconfrim firefox vlc telegram-desktop alacritty gnome-boxes gimp nautilus discord libreoffice
+
+# Programming language stuff
+pacman -S --needed --noconfirm npm texlive-most dart gdb python-pip jdk-openjdk
+
+# Other
+pacman -S --needed --noconfirm libnotify ffmpeg man-db jq acpi playerctl sysstat
+
+# AUR stuff
+sudo -u "$SUDO_USER" $aurhelper -S --needed --noconfirm picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git remontoire-git flutter android-studio datagrip teams google-chrome
+
+# i3-gnome-flashback
 sudo -u "$SUDO_USER" git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
 cd /tmp/i3gf
 sudo make install
@@ -88,25 +105,18 @@ cd
 putgitrepo "$dotfilesrepo" "/home/$SUDO_USER" "master"
 putgitrepo "$configrepo" "/home/$SUDO_USER" "move_stuff_arch"
 
-#rm -f "/home/$SUDO_USER/README.md" "/home/$SUDO_USER/LICENSE" "/home/$SUDO_USER/FUNDING.yml"
-# make git ignore deleted LICENSE & README.md files
-#git update-index --assume-unchanged "/home/$name/README.md" "/home/$name/LICENSE" "/home/$name/FUNDING.yml" #! interesting?
-
 # Make zsh the default shell for the user.
 chsh -s /bin/zsh "$SUDO_USER"
 
 # Edit lightdm config files and enable lightdm
-#TODO somehow it didnt work the first time, had to re-type it -- maybe enable it after changing the settings?
-systemctl enable lightdm
 sed -i "s/#greeter-session=example-gtk-gnome$/greeter-session=lightdm-webkit2-greeter/" /etc/lightdm/lightdm.conf
 sed -i "s/^webkit_theme.*/webkit_theme = sequoia/g" /etc/lightdm/lightdm-webkit2-greeter.conf
+systemctl enable lightdm
 
 # Edit i3 gnome flashback startup script to source Xresources
 sed -i "s/^i3$/[ -f \$HOME\/\.Xresources ] \&\& xrdb \$HOME\/\.Xresources\ni3 -c \$HOME\/\.config\/i3\/config/" /usr/bin/i3-gnome-flashback
 
-#TODO conditionally do the "lid" ones only if the host is a laptop
 # Change settings
-#TODO they seem to be broken -- they all go through, but when i boot into i3-gnome the default settings are being used
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.session idle-delay 3600
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.screensaver lock-delay 180
 dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
@@ -128,22 +138,4 @@ sudo -u "$SUDO_USER" sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvi
 # Add back the restrictions before exiting the script
 sudo sed -i 's/^\s*\(%wheel\s\+ALL=(ALL)\s\+NOPASSWD:\s\+ALL\)$/#\1/' /etc/sudoers
 
-# Tap to click
-#[ ! -f /etc/X11/xorg.conf.d/40-libinput.conf ] && printf 'Section "InputClass" #!
-#        Identifier "libinput touchpad catchall"
-#        MatchIsTouchpad "on"
-#        MatchDevicePath "/dev/input/event*"
-#        Driver "libinput"
-#	# Enable left mouse button by tapping
-#	Option "Tapping" "on"
-#EndSection' > /etc/X11/xorg.conf.d/40-libinput.conf
-
-#TODO install locate && sudo updatedb
-#TODO Install the nerd-fonts versions of JetBrains Mono and Source Code Pro
-#TODO add sensors-detect command
-#TODO add conditional logic to i3blocks scripts -- if not on laptop then dont show battery and so on
-#TODO still missing font awesome fonts
-#TODO download pop shell in order to have a fallback de and setup that session 
-#TODO remove "useless" .desktop files from /usr/share/xsessions 
-#TODO change session names (/usr/share/xsessions)
-#TODO rank mirrors before starting the actual script?
+updatedb

@@ -80,7 +80,7 @@ $pm_inst dunst feh pulseaudio-alsa pulsemixer unclutter i3-gaps i3blocks rofi ne
 $pm_inst lightdm lightdm-webkit2-greeter 
 
 # Fonts
-$pm_inst ttf-jetbrains-mono adobe-source-code-pro-fonts adobe-source-han-sans-jp-fonts adobe-source-han-sans-krfonts adobe-source-han-sans-cn-fonts 
+$pm_inst ttf-jetbrains-mono adobe-source-code-pro-fonts adobe-source-han-sans-jp-fonts adobe-source-han-sans-kr-fonts adobe-source-han-sans-cn-fonts 
 
 # Theming
 $pm_inst papirus-icon-theme

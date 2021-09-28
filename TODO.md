@@ -1,4 +1,6 @@
 ## Important
+- alcune cose non sono state installate?
+- yay-bin e altra roba da aur richiede pwd
 - install/change cursor theme to a white one
 - install a non-mono font and set it as main font
 - install the nerd-fonts variants of JetBrains Mono and Source Code Pro
@@ -18,3 +20,7 @@
 - maybe remove ueseless .desktop files from /usr/share/xsessions
 - change session names
 - rank mirrors by speed before installing stuff
+
+## New
+- there seems to be a dependency cicle
+- some fonts are being installed twicee

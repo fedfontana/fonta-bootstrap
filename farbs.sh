@@ -3,7 +3,7 @@
 ### OPTIONS AND VARIABLES ###
 
 while getopts ":a:r:c:h" o; do case "${o}" in
-	h) printf "Optional arguments for custom use:\\n  -r: Dotfiles repository (local file or url)\\n  -c Config repository (local file or url)\\n  -p: Dependencies and programs csv (local file or url)\\n  -a: AUR helper (must have pacman-like syntax)\\n  -h: Show this message\\n" && exit 1 ;;
+	h) printf "Optional arguments for custom use:\\n -a: AUR helper (must have pacman-like syntax)\\n  -h: Show this message\\n" && exit 1 ;;
 	r) dotfilesrepo=${OPTARG} && git ls-remote "$dotfilesrepo" || exit 1 ;;
 	c) configrepo=${OPTARG} && git ls-remote "$configrepo" || exit 1;;
 	a) aurhelper=${OPTARG} ;;
@@ -29,15 +29,15 @@ putgitrepo()
 	dir=$(mktemp -d)
 	[ ! -d "$2" ] && mkdir -p "$2"
 	chown "$SUDO_USER":wheel "$dir" "$2"
-	$sudo_usr git clone --recursive -b "$branch" --depth 1 --recurse-submodules "$1" "$dir"
-	$sudo_usr cp -rfT "$dir" "$2"
+	sudo -u "$SUDO_USER" git clone --recursive -b "$branch" --depth 1 --recurse-submodules "$1" "$dir"
+	sudo -u "$SUDO_USER" cp -rfT "$dir" "$2"
 }
 
 manualinstall() 
 { # Installs $1 manually. Used only for AUR helper here.
-	$sudo_usr git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1"
+	sudo -u "$SUDO_USER" git clone --depth 1 "https://aur.archlinux.org/$1.git" "/tmp/$1"
 	cd "/tmp/$1"
-	$sudo_usr makepkg --noconfirm -si || return 1
+	sudo -u "$SUDO_USER" makepkg --noconfirm -si || return 1
 	cd
 }
 
@@ -98,10 +98,10 @@ $pm_inst npm texlive-most dart gdb python-pip jdk-openjdk
 $pm_inst libnotify ffmpeg man-db jq acpi playerctl sysstat
 
 # AUR stuff
-$sudo_usr $yay_inst picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git remontoire-git flutter android-studio datagrip teams google-chrome
+sudo -u "$SUDO_USER" $yay_inst picom-ibhagwan-git spotify visual-studio-code-insiders-bin kripton-theme-git lightdm-webkit-theme-sequoia-git remontoire-git flutter android-studio datagrip teams google-chrome
 
 # i3-gnome-flashback
-$sudo_usr git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
+sudo -u "$SUDO_USER" git clone https://github.com/deuill/i3-gnome-flashback /tmp/i3gf
 cd /tmp/i3gf
 sudo make install
 cd
@@ -122,23 +122,23 @@ systemctl enable lightdm
 sed -i "s/^i3$/[ -f \$HOME\/\.Xresources ] \&\& xrdb \$HOME\/\.Xresources\ni3 -c \$HOME\/\.config\/i3\/config/" /usr/bin/i3-gnome-flashback
 
 # Change settings
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.session idle-delay 3600
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.screensaver lock-delay 180
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing true
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.settings-daemon.plugins.power lid-close-ac-action 'nothing'
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.settings-daemon.plugins.power lid-close-suspend-with-external-monitor 'nothing'
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click true
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.session idle-delay 3600
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.screensaver lock-delay 180
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing true
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.settings-daemon.plugins.power lid-close-ac-action 'nothing'
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.settings-daemon.plugins.power lid-close-suspend-with-external-monitor 'nothing'
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click true
 
 # Theming
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-theme "Kripton"
-$sudo_usr dbus-launch --exit-with-session gsettings set org.gnome.desktop.wm.preferences theme "Kripton"
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-theme "Kripton"
+sudo -u "$SUDO_USER" dbus-launch --exit-with-session gsettings set org.gnome.desktop.wm.preferences theme "Kripton"
 
 # Download and install vim-plug
-$sudo_usr sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+sudo -u "$SUDO_USER" sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 
 # Add back the restrictions before exiting the script
 sed -i 's/^\s*\(%wheel\s\+ALL=(ALL)\s\+NOPASSWD:\s\+ALL\)$/#\1/' /etc/sudoers

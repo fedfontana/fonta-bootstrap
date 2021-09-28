@@ -1,4 +1,6 @@
-## Important
+# Todo by priority
+
+## High
 - alcune cose non sono state installate?
 - yay-bin e altra roba da aur richiede pwd
 - install/change cursor theme to a white one
@@ -14,8 +16,9 @@
 - conditionally set the "lid" gsettings stuff if on laptop
 - maybe download pop shell in order to have a fallback de
 - setup the default gnome session (fallback de)
+- change comments and -h help string
 
-## Maybe
+## Low
 - add sensors-detect cmd to the script?
 - maybe remove ueseless .desktop files from /usr/share/xsessions
 - change session names

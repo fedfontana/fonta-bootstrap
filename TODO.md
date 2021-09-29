@@ -1,5 +1,10 @@
 # Todo by priority
 
+- yay still asks for pwd
+- picom maybe asks for pwd?
+- spotify aur package installation is broken?
+- something's badly broken
+
 ## High
 - alcune cose non sono state installate?
 - yay-bin e altra roba da aur richiede pwd
